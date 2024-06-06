@@ -1,96 +1,63 @@
 #include "entity.hpp"
-#include "minecraft.hpp"
+#include "range.hpp"
 #include <boost/algorithm/string/join.hpp>
-#include <iostream>
 #include <vector>
 
-std::string minecraft::entity::unpackFilter(minecraft::entity::Filter filter)
+std::string mcpp::Entity::packFilter(std::optional<Filter> filter)
 {
+    if (not filter.has_value())
+    {
+        return "";
+    }
     std::vector<std::string> result;
     std::string result_string;
-    try
+    if (filter.value().sort.has_value())
     {
-        switch (filter.sort.value())
+        switch (filter.value().sort.value())
         {
             case NEAREST:
                 result.push_back("sort=nearest");
                 break;
-            case FARTHEST:
-                result.push_back("sort=farthest");
+            case FURTHEST:
+                result.push_back("sort=furthest");
+                break;
+            case ARBITRARY:
+                result.push_back("sort=arbitrary");
+                break;
+            case RANDOM:
+                result.push_back("sort=random");
                 break;
         };
     }
-    catch (std::bad_optional_access)
+    if (filter.value().distance.has_value())
     {
-        std::cout << "Error: sort type unset!\n";
+        result.push_back("distance=" + mcpp::packRange(filter.value().distance.value()));
     }
-    try
-    {
-        result.push_back("distance=" + minecraft::unpackRange(*filter.distance[0], *filter.distance[1]));
-    }
-    catch (std::bad_optional_access)
-    {
-        std::cout << "Error: distance range unset!\n";
-    }
-    return boost::algorithm::join(result, ", ");
+    return (std::string) "[" + boost::algorithm::join(result, ", ") + (std::string) "]";
 }
 
-std::string minecraft::entity::self()
+std::string mcpp::Entity::packSelector(Selector selector)
 {
-    return "@s";
-};
+    switch (selector)
+    {
+        case S:
+            return "@s";
+        case E:
+            return "@e";
+        case N:
+            return "@n";
+        case A:
+            return "@a";
+        case P:
+            return "@p";
+        case R:
+            return "@r";
+        default:
+            return "";
+    }
+}
 
-std::string minecraft::entity::self(minecraft::entity::Filter filter)
+std::string mcpp::Entity::pack()
 {
-    return std::string("@s[") + minecraft::entity::unpackFilter(filter) + std::string("]");
-};
-
-std::string minecraft::entity::nearest()
-{
-    return "@n";
-};
-
-std::string minecraft::entity::nearest(minecraft::entity::Filter filter)
-{
-    return std::string("@n[") + minecraft::entity::unpackFilter(filter) + std::string("]");
-};
-
-std::string minecraft::entity::any()
-{
-    return "@e";
-};
-
-std::string minecraft::entity::any(minecraft::entity::Filter filter)
-{
-    return std::string("@e[") + minecraft::entity::unpackFilter(filter) + std::string("]");
-};
-
-std::string minecraft::entity::player::nearest()
-{
-    return "@p";
-};
-
-std::string minecraft::entity::player::nearest(minecraft::entity::Filter filter)
-{
-    return std::string("@p[") + minecraft::entity::unpackFilter(filter) + std::string("]");
-};
-
-std::string minecraft::entity::player::any()
-{
-    return "@a";
-};
-
-std::string minecraft::entity::player::any(minecraft::entity::Filter filter)
-{
-    return std::string("@a[") + minecraft::entity::unpackFilter(filter) + std::string("]");
-};
-
-std::string minecraft::entity::player::random()
-{
-    return "@r";
-};
-
-std::string minecraft::entity::player::random(minecraft::entity::Filter filter)
-{
-    return std::string("@r[") + minecraft::entity::unpackFilter(filter) + std::string("]");
-};
+    return packSelector(selector) + packFilter(filter);
+}

@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("boost")
+add_requires("boost", "nlohmann_json")
 
 target("mcplusplus")
     set_kind("binary")

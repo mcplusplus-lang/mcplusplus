@@ -1,36 +1,45 @@
 #pragma once
+#include "range.hpp"
 #include <optional>
 #include <string>
 
-namespace minecraft::entity
+namespace mcpp
 {
-    // filters
-    enum Sort
+    class Entity
     {
-        NEAREST,
-        FARTHEST,
-    };
-    struct Filter
-    {
-        std::optional<Sort> sort;
-        std::optional<int> distance[2];
-    };
-    std::string unpackFilter(minecraft::entity::Filter filter);
-    // selectors
-    std::string self();
-    std::string self(minecraft::entity::Filter filter);
-    std::string nearest();
-    std::string nearest(minecraft::entity::Filter filter);
-    std::string any();
-    std::string any(minecraft::entity::Filter filter);
-}; // namespace minecraft::entity
+      public:
+        // selectors
+        enum Selector
+        {
+            E,
+            S,
+            N,
+            A,
+            P,
+            R,
+        };
+        Selector selector;
+        std::string packSelector(Selector selector);
 
-namespace minecraft::entity::player
-{
-    std::string nearest();
-    std::string nearest(minecraft::entity::Filter filter);
-    std::string any();
-    std::string any(minecraft::entity::Filter filter);
-    std::string random();
-    std::string random(minecraft::entity::Filter filter);
-}; // namespace minecraft::entity::player
+        // filters
+        enum Sort
+        {
+            NEAREST,
+            FURTHEST,
+            ARBITRARY,
+            RANDOM,
+        };
+        struct Filter
+        {
+            std::optional<Sort> sort;
+            std::optional<mcpp::Range> distance;
+        };
+        std::optional<Filter> filter;
+        std::string packFilter(std::optional<Filter> filter);
+
+        // methods
+        Entity(Selector selector) : selector(selector){};
+        Entity(Selector selector, Filter filter) : selector(selector), filter(filter){};
+        std::string pack();
+    };
+}; // namespace mcpp
