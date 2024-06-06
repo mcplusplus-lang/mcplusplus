@@ -1,23 +1,36 @@
+#pragma once
+#include <optional>
 #include <string>
 
-namespace minecraft::Entity {
-  std::string self();
-  std::string nearest();
-  std::string any();
-  class Properties {
-    public:
-      enum Sort {
+namespace minecraft::entity
+{
+    // filters
+    enum Sort
+    {
         NEAREST,
         FARTHEST,
-      };
-      Sort sort;
-      std::string unpack();
-  };
-};
+    };
+    struct Filter
+    {
+        std::optional<Sort> sort;
+        std::optional<int> distance[2];
+    };
+    std::string unpackFilter(minecraft::entity::Filter filter);
+    // selectors
+    std::string self();
+    std::string self(minecraft::entity::Filter filter);
+    std::string nearest();
+    std::string nearest(minecraft::entity::Filter filter);
+    std::string any();
+    std::string any(minecraft::entity::Filter filter);
+}; // namespace minecraft::entity
 
-namespace minecraft::Entity::Player {
-  std::string nearest();
-  std::string any();
-  std::string any(minecraft::Entity::Properties properties);
-  std::string random();
-};
+namespace minecraft::entity::player
+{
+    std::string nearest();
+    std::string nearest(minecraft::entity::Filter filter);
+    std::string any();
+    std::string any(minecraft::entity::Filter filter);
+    std::string random();
+    std::string random(minecraft::entity::Filter filter);
+}; // namespace minecraft::entity::player

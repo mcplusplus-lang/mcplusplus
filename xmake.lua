@@ -1,6 +1,8 @@
 add_rules("mode.debug", "mode.release")
 
-target("mcf-precompiler")
+add_requires("boost")
+
+target("mcplusplus")
     set_kind("binary")
     add_files("src/*.cpp")
 

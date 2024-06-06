@@ -1,8 +1,10 @@
+#pragma once
+#include <optional>
 #include <string>
-#include "entity.hpp"
 
-namespace minecraft {
-
-void test();
-std::string say(std::string message);
-}
+namespace minecraft
+{
+    std::string unpackRange(std::optional<int> min, std::optional<int> max);
+    std::string say(std::string message);
+    std::string tellraw(std::string target, std::string messageJson);
+} // namespace minecraft
