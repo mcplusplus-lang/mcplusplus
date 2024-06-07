@@ -1,5 +1,6 @@
 #include "mcpp.hpp"
 #include "entity.hpp"
+#include <boost/algorithm/string/join.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -19,24 +20,43 @@ std::string mcpp::tellraw(mcpp::Entity target, std::string messageJson)
     return "tellraw " + target.pack() + " \"" + messageJson + "\"";
 }
 
-std::string mcpp::generate_mcmeta(int dp_version, std::string dp_description)
+std::string mcpp::generate_mcmeta()
 {
     json j = {
-        {"pack", {{"pack_format", dp_version}, {"description", dp_description}}}};
+        {"pack",
+         {{"pack_format", dp_version},
+          {"description", dp_description}}}};
     return j.dump(4);
 }
 
-void mcpp::init(int dp_version, std::string dp_description, std::string dp_namespace)
+std::string mcpp::generate_function_tag(std::string function)
 {
-    std::ofstream mcmeta("pack.mcmeta");
-    mcmeta << generate_mcmeta(dp_version, dp_description);
+    json j = {
+        {"values",
+         {dp_namespace + ":" + function}}};
+    return j.dump(4);
+}
+
+void mcpp::init()
+{
+    std::filesystem::create_directory(dp_namespace);
+    std::ofstream mcmeta(dp_namespace + "/pack.mcmeta");
+    mcmeta << generate_mcmeta();
     mcmeta.close();
-    if (not std::filesystem::is_directory("data"))
-    {
-        std::filesystem::create_directory("data");
-    }
-    if (not std::filesystem::is_directory("data/" + dp_namespace))
-    {
-        std::filesystem::create_directory("data/" + dp_namespace);
-    }
+    std::filesystem::create_directories(dp_namespace + "/data/minecraft/tags/functions");
+    // tick and load jsons
+    std::ofstream tick(dp_namespace + "/data/minecraft/tags/functions/tick.json");
+    tick << generate_function_tag("tick");
+    tick.close();
+    std::ofstream load(dp_namespace + "/data/minecraft/tags/functions/load.json");
+    load << generate_function_tag("load");
+    load.close();
+    std::filesystem::create_directories(dp_namespace + "/data/" + dp_namespace + "/functions");
+}
+
+void mcpp::func(std::string name, std::vector<std::string> body)
+{
+    std::ofstream output(dp_namespace + "/data/" + dp_namespace + "/functions/" + name + ".mcfunction");
+    output << boost::algorithm::join(body, "\n");
+    output.close();
 }
